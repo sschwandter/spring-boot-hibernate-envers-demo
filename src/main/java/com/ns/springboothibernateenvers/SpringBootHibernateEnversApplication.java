@@ -30,8 +30,8 @@ public class SpringBootHibernateEnversApplication {
 
         userDetails.setLastName("Updated Last name"); // Update-2
         userRepository.save(userDetails);
-
-        userRepository.delete(userDetails); // Delete
+//
+//        userRepository.delete(userDetails); // Delete
     }
 
 }
