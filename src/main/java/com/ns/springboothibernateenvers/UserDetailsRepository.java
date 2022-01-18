@@ -6,7 +6,4 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface UserDetailsRepository extends JpaRepository<UserDetails, Integer> {
-
-	List<UserDetails> findAllByLastNameContains(String name);
-}
+public interface UserDetailsRepository extends JpaRepository<UserDetails, Integer> {}
