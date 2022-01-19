@@ -34,7 +34,10 @@ public class SpringBootHibernateEnversApplication {
 
         userDetails.setLastName("Updated Last name"); // Update-2
         userRepository.save(userDetails);
-//
+
+        addressRepository.save(new Address(1, "Updated address"));
+
+        //
 //        userRepository.delete(userDetails); // Delete
     }
 

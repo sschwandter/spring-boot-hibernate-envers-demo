@@ -1,14 +1,13 @@
 package com.ns.springboothibernateenvers;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.hibernate.envers.AuditReaderFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEntityManager;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -22,6 +21,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+
+/**
+ * TODO: cleanup after each test. ATM you can only run a single test reliably!
+ */
 
 @SpringBootTest
 @AutoConfigureTestEntityManager
@@ -42,7 +45,7 @@ public class UserDetailsHistoryRepositoryIT {
 
 	private TransactionTemplate template;
 
-	@BeforeAll
+	@BeforeEach
 	public void transactionTemplate() {
 		template = new TransactionTemplate(platformTransactionManager);
 	}
@@ -87,6 +90,60 @@ public class UserDetailsHistoryRepositoryIT {
 		template.executeWithoutResult(__ ->  {
 				final Optional<UserDetails> currentUserDetails = userRepository.getAtTimestamp(USER_ID, Date.from(Instant.now()));
 				assertThat(currentUserDetails.isPresent(), is(false));
+		});
+	}
+
+	// Try the following: create userdetails with a certain address, then update the address. When I retrieve the original
+	// userdetails - will it still have the old address? I sure hope so :)
+
+	@Test
+	@Disabled // This fails! Is this expected behaviour? Arguably yes. But how can I retrieve a version of the userdetails that points to the old address revision?
+	void editReferredAddressUserDetailsStillPointsToOldAddress() {
+
+		UserDetails userDetails = initTestData();
+
+		final Address originalAddress = template.execute(status -> addressRepository.getById(1));
+
+
+		template.executeWithoutResult(transactionStatus -> addressRepository.save(new Address(1, "Updated address")));
+
+		template.executeWithoutResult(__ -> AuditReaderFactory.get(
+				entityManager.getEntityManager()).getRevisions(Address.class, 1)
+				.forEach(System.out::println));
+
+		template.executeWithoutResult(__ -> {
+			final UserDetails detailsFromDb = userRepository.getById(USER_ID);
+			// FAILS!
+			assertThat(detailsFromDb.getAddress().getAddress(), equalTo("Updated address"));
+		});
+	}
+
+	@Test
+	void doIUnderstandTheWayEnversWorksYet() {
+
+		UserDetails userDetails = initTestData();
+
+		final Address originalAddress = template.execute(status -> addressRepository.getById(1));
+
+
+		template.executeWithoutResult(transactionStatus -> addressRepository.save(new Address(1, "Updated address")));
+
+		template.executeWithoutResult(__ -> AuditReaderFactory.get(
+						entityManager.getEntityManager()).getRevisions(Address.class, 1)
+				.forEach(System.out::println));
+
+		// Interesting, when going via the envers api, I get the old address for all 3 revisions
+		template.executeWithoutResult(__ -> {
+			userRepository.getTechnicalHistory(1).forEach(System.out::println);
+
+
+			// When I do not go through envers, of course I get the address that's currently in the main table - which
+			// is the updated one.
+			System.out.println(userRepository.getById(1));
+
+//			final Optional<UserDetails> detailsFromDb = userRepository.getAtTimestamp(1, Date.from(Instant.now().minus(70, ChronoUnit.MILLIS)));
+//			assertThat(detailsFromDb.get().getAddress().getAddress(), equalTo("Montecuccoliplatz"));
+
 		});
 	}
 
