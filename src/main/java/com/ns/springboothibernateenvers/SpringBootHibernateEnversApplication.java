@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 
 
 @SpringBootApplication
@@ -16,12 +17,15 @@ public class SpringBootHibernateEnversApplication {
     }
 
     @Bean
-    ApplicationRunner init(UserDetailsRepository userRepository) {
-        return (ApplicationArguments args) -> dataSetup(userRepository);
+    @Profile("initDb")
+    ApplicationRunner init(UserDetailsRepository userRepository, AddressRepository addressRepository) {
+        return (ApplicationArguments args) -> dataSetup(userRepository, addressRepository);
     }
-    private void dataSetup(UserDetailsRepository userRepository) {
+    private void dataSetup(UserDetailsRepository userRepository, AddressRepository addressRepository) {
 
-        UserDetails userDetails = new UserDetails(1, "NIRAJ", "SONAWANE");
+        UserDetails userDetails = new UserDetails(1, "NIRAJ", "SONAWANE", new Address(1, "Montecuccoliplatz"));
+
+        addressRepository.save(new Address(1, "Montecuccoliplatz"));
 
         userRepository.save(userDetails);      // Create
 
