@@ -42,14 +42,8 @@ public class UserDetailsHistoryRepositoryIT {
 	AddressRepository addressRepository;
 
 	@Autowired
-	private PlatformTransactionManager platformTransactionManager;
-
 	private TransactionTemplate template;
 
-	@BeforeEach
-	public void transactionTemplate() {
-		template = new TransactionTemplate(platformTransactionManager);
-	}
 
 	@Test
 	void findAllRevisionsReturnsListOfAllRevisions() {
