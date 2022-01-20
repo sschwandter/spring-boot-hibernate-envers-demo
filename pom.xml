@@ -30,9 +30,8 @@
 <!--			<artifactId>flyway-core</artifactId>-->
 <!--		</dependency>-->
 		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-envers</artifactId>
-			<version>5.6.3.Final</version>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-envers</artifactId>
 		</dependency>
 
 		<dependency>

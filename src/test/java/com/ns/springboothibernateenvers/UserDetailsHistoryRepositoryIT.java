@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEntityManager;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.history.Revisions;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -136,7 +137,7 @@ public class UserDetailsHistoryRepositoryIT {
 		template.executeWithoutResult(__ -> {
 			userRepository.getTechnicalHistory(1).forEach(System.out::println);
 
-
+			final Revisions<Integer, UserDetails> revisions = userRepository.findRevisions(1);
 			// When I do not go through envers, of course I get the address that's currently in the main table - which
 			// is the updated one.
 			System.out.println(userRepository.getById(1));
